@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --glass-bg: rgba(10, 15, 30, 0.45);
+            --glass-bg: rgba(10, 15, 30, 0.5);
             --glass-border: rgba(255, 255, 255, 0.1);
             --neon-blue: #00d4ff;
             --neon-pink: #ff007f;
@@ -23,11 +23,11 @@
         .bg-image {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-size: cover; background-position: center;
-            opacity: 0; transform: scale(1.1); transition: opacity 2s ease-in-out;
+            opacity: 0; transform: scale(1.05); transition: opacity 2.5s ease-in-out;
         }
         .bg-image.active {
             opacity: 1; transform: scale(1);
-            transition: opacity 2s ease-in-out, transform 12s linear;
+            transition: opacity 2.5s ease-in-out, transform 12s linear;
         }
 
         .overlay {
@@ -36,7 +36,7 @@
             pointer-events: none;
         }
 
-        /* 橫向長條面板 */
+        /* 核心面板 */
         #widget-container {
             position: absolute; bottom: 30px; left: 30px; right: 30px;
             background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
@@ -65,34 +65,29 @@
         .item-temp { font-size: 0.9rem; font-weight: 700; color: #fff; }
         .item-temp span { font-size: 0.5rem; vertical-align: super; opacity: 0.5; }
         .item-pop { font-size: 0.75rem; color: var(--neon-blue); font-weight: 500; }
-        .high-pop { color: #ff4444 !important; }
 
-        /* --- 直向模式優化：精緻扁平長條 --- */
+        /* --- 直向模式：貼齊底部、緊湊佈局 --- */
         @media (orientation: portrait) {
             #widget-container {
-                bottom: 15px; left: 15px; right: 15px;
-                padding: 8px 15px;
+                bottom: 8px; left: 10px; right: 10px;
+                padding: 10px 15px;
                 border-radius: 12px;
-                justify-content: space-between;
-                gap: 5px;
+                gap: 8px;
             }
-            .time-section {
-                padding-right: 10px; min-width: 100px; border-right: 1px solid rgba(255,255,255,0.1);
-            }
-            .time-display { font-size: 1.8rem; }
-            .location-display { font-size: 0.7rem; }
-            .date-display { font-size: 0.6rem; }
+            .time-section { padding-right: 12px; min-width: 105px; }
+            .time-display { font-size: 2rem; }
+            .location-display { font-size: 0.8rem; }
+            .date-display { font-size: 0.7rem; }
             
-            .weather-content { padding-left: 5px; gap: 12px; justify-content: space-between; width: 100%; }
-            .current-temp { font-size: 1.6rem; }
-            .current-icon { font-size: 1.6rem; }
-            .forecast-group { gap: 6px; }
-            .forecast-item { min-width: 35px; }
-            .item-label { font-size: 0.55rem; }
-            .item-icon { font-size: 0.9rem; }
-            .item-temp { font-size: 0.75rem; }
-            .divider { display: block; width: 1px; height: 25px; background: rgba(255,255,255,0.1); margin: 0 2px; }
-            #weekly-container { display: flex; } /* 重新顯示週預報 */
+            .weather-content { padding-left: 8px; gap: 12px; justify-content: space-between; }
+            .current-temp { font-size: 1.8rem; }
+            .current-icon { font-size: 1.8rem; }
+            .forecast-group { gap: 8px; }
+            .forecast-item { min-width: 38px; }
+            .item-label { font-size: 0.6rem; }
+            .item-icon { font-size: 1rem; }
+            .item-temp { font-size: 0.85rem; }
+            .divider { width: 1px; height: 20px; background: rgba(255,255,255,0.1); margin: 0 5px; }
         }
 
         #location-menu {
@@ -103,12 +98,8 @@
             pointer-events: none; z-index: 100; max-height: 50vh; overflow-y: auto;
         }
         #location-menu.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
-        
-        .menu-section { display: flex; flex-direction: column; gap: 8px; }
-        .menu-title { font-size: 0.8rem; color: var(--neon-pink); font-weight: 700; border-left: 3px solid var(--neon-pink); padding-left: 6px; }
         .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
         .loc-btn { padding: 10px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; text-align: center; cursor: pointer; color: #fff; font-size: 0.85rem; }
-        .loc-btn.dist-btn { color: #888; }
     </style>
 </head>
 <body ondblclick="toggleFullScreen()">
@@ -127,9 +118,9 @@
                 <div class="current-temp" id="current-temp">--<span>°C</span></div>
                 <div class="current-icon" id="current-icon">☁️</div>
             </div>
-            <div class="forecast-group" id="hourly-container"></div>
+            <div id="hourly-container" class="forecast-group"></div>
             <div class="divider"></div>
-            <div class="forecast-group" id="weekly-container"></div>
+            <div id="weekly-container" class="forecast-group"></div>
         </div>
 
         <div id="location-menu" onclick="event.stopPropagation()">
@@ -152,24 +143,13 @@
         let imageUrls = [], currentImageIndex = 0;
         let currentCity = '新北市', currentDistrict = '新莊區';
 
-        const CITIES = [
-            { label: '基隆市', city: '基隆市', dist: '中正區', id: '049' },
-            { label: '臺北市', city: '臺北市', dist: '中正區', id: '061' },
-            { label: '新北市', city: '新北市', dist: '板橋區', id: '069' },
-            { label: '桃園市', city: '桃園市', dist: '桃園區', id: '005' },
-            { label: '新竹市', city: '新竹市', dist: '東區', id: '053' },
-            { label: '宜蘭縣', city: '宜蘭縣', dist: '宜蘭市', id: '001' },
-            { label: '臺中市', city: '臺中市', dist: '西屯區', id: '073' }
-        ];
-
-        const DISTRICTS = [
-            { label: '淡水區', city: '新北市', dist: '淡水區', id: '069' },
-            { label: '板橋區', city: '新北市', dist: '板橋區', id: '069' },
-            { label: '新莊區', city: '新北市', dist: '新莊區', id: '069' },
-            { label: '永和區', city: '新北市', dist: '永和區', id: '069' },
-            { label: '中壢區', city: '桃園市', dist: '中壢區', id: '005' },
-            { label: '大甲區', city: '臺中市', dist: '大甲區', id: '073' }
-        ];
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('time-display').innerText = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            const days = ['日','一','二','三','四','五','六'];
+            document.getElementById('date-display').innerText = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} 星期${days[now.getDay()]}`;
+        }
+        setInterval(updateTime, 1000); updateTime();
 
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
@@ -179,51 +159,15 @@
             }
         }
 
-        function updateTime() {
-            const now = new Date();
-            document.getElementById('time-display').innerText = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-            const days = ['日','一','二','三','四','五','六'];
-            document.getElementById('date-display').innerText = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} 星期${days[now.getDay()]}`;
-        }
-        setInterval(updateTime, 1000); updateTime();
-
         function toggleMenu(e) { e.stopPropagation(); document.getElementById('location-menu').classList.toggle('show'); }
-        function selectLoc(city, dist, id) {
-            currentCity = city; currentDistrict = dist;
-            document.getElementById('loc-tag').innerHTML = `<b>${city.replace('臺','台')}</b> <span>${dist}</span>`;
-            document.getElementById('location-menu').classList.remove('show');
-            fetchWeather(id);
-        }
-
-        document.getElementById('city-grid').innerHTML = CITIES.map(item => `
-            <div class="loc-btn city-btn" onclick="selectLoc('${item.city}','${item.dist}','${item.id}')">${item.label.replace('臺','台')}</div>
-        `).join('');
-
-        document.getElementById('dist-grid').innerHTML = DISTRICTS.map(item => `
-            <div class="loc-btn dist-btn" onclick="selectLoc('${item.city}','${item.dist}','${item.id}')">${item.label}</div>
-        `).join('');
-
-        function getWeatherIcon(wx) {
-            if (wx.includes('雷')) return '⛈️';
-            if (wx.includes('雨')) return '🌧️';
-            if (wx.includes('晴') && wx.includes('雲')) return '⛅';
-            if (wx.includes('晴')) return '☀️';
-            return '☁️';
-        }
-
+        
         async function fetchWeather(forcedId) {
             try {
-                let item = null;
-                if (forcedId) {
-                    item = { id: forcedId };
-                } else {
-                    item = CITIES.find(i => i.city === currentCity && i.dist === currentDistrict) || 
-                           DISTRICTS.find(i => i.city === currentCity && i.dist === currentDistrict) || 
-                           CITIES[2];
-                }
-                const res2D = await fetch(`https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-D0047-${item.id}?Authorization=${CWA_API_KEY}&LocationName=${encodeURIComponent(currentDistrict)}`);
+                const item = { label: '新北市', city: '新北市', dist: '新莊區', id: '069' }; // 預設
+                const targetId = forcedId || '069';
+                const res2D = await fetch(`https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-D0047-${targetId}?Authorization=${CWA_API_KEY}&LocationName=${encodeURIComponent(currentDistrict)}`);
                 const data2D = await res2D.json();
-                const weekId = String(parseInt(item.id) + 2).padStart(3, '0');
+                const weekId = String(parseInt(targetId) + 2).padStart(3, '0');
                 const resW = await fetch(`https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-D0047-${weekId}?Authorization=${CWA_API_KEY}&LocationName=${encodeURIComponent(currentDistrict)}`);
                 const dataW = await resW.json();
                 renderWeather(data2D, dataW);
@@ -234,16 +178,13 @@
             const loc = d2D.records.Locations[0].Location[0];
             const getE = (l, n) => l.WeatherElement.find(e => e.ElementName === n);
             const wx = getE(loc, '天氣現象').Time, temp = getE(loc, '溫度').Time, pop = getE(loc, '3小時降雨機率').Time;
-
             document.getElementById('current-temp').innerHTML = `${temp[0].ElementValue[0].Temperature}<span>°C</span>`;
             document.getElementById('current-icon').innerText = getWeatherIcon(wx[0].ElementValue[0].Weather);
-
             const hCont = document.getElementById('hourly-container'); hCont.innerHTML = '';
             for(let i=1; i<=4; i++) {
                 const p = pop[i].ElementValue[0].ProbabilityOfPrecipitation;
-                hCont.innerHTML += `<div class="forecast-item"><span class="item-label ${parseInt(p)>50?'high-pop':''}">${wx[i].StartTime.substring(11,16)}</span><span class="item-icon">${getWeatherIcon(wx[i].ElementValue[0].Weather)}</span><span class="item-temp">${temp[i].ElementValue[0].Temperature}<span>°C</span></span><span class="item-pop">${p}%</span></div>`;
+                hCont.innerHTML += `<div class="forecast-item"><span class="item-label">${wx[i].StartTime.substring(11,16)}</span><span class="item-icon">${getWeatherIcon(wx[i].ElementValue[0].Weather)}</span><span class="item-temp">${temp[i].ElementValue[0].Temperature}<span>°C</span></span><span class="item-pop">${p}%</span></div>`;
             }
-
             const wLoc = dW.records.Locations[0].Location[0];
             const wMin = getE(wLoc, '最低溫度').Time, wMax = getE(wLoc, '最高溫度').Time, wWx = getE(wLoc, '天氣現象').Time, wPop = getE(wLoc, '12小時降雨機率').Time;
             const wCont = document.getElementById('weekly-container'); wCont.innerHTML = '';
@@ -253,9 +194,17 @@
                 if(d === lastD || d === new Date().toISOString().substring(0,10)) continue;
                 lastD = d;
                 const p = wPop.find(x=>x.StartTime.includes(d))?.ElementValue[0].ProbabilityOfPrecipitation || '0';
-                wCont.innerHTML += `<div class="forecast-item"><span class="item-label ${parseInt(p)>50?'high-pop':''}">${['週日','週一','週二','週三','週四','週五','週六'][new Date(d).getDay()]}</span><span class="item-icon">${getWeatherIcon(wWx.find(x=>x.StartTime.includes(d)).ElementValue[0].Weather)}</span><span class="item-temp">${wMax.find(x=>x.StartTime.includes(d)).ElementValue[0].MaxTemperature}<span>°C</span></span><span class="item-pop">${p}%</span></div>`;
+                wCont.innerHTML += `<div class="forecast-item"><span class="item-label">${['週日','週一','週二','週三','週四','週五','週六'][new Date(d).getDay()]}</span><span class="item-icon">${getWeatherIcon(wWx.find(x=>x.StartTime.includes(d)).ElementValue[0].Weather)}</span><span class="item-temp">${wMax.find(x=>x.StartTime.includes(d)).ElementValue[0].MaxTemperature}<span>°C</span></span><span class="item-pop">${p}%</span></div>`;
                 if(++added >= 4) break;
             }
+        }
+
+        function getWeatherIcon(wx) {
+            if (wx.includes('雷')) return '⛈️';
+            if (wx.includes('雨')) return '🌧️';
+            if (wx.includes('晴') && wx.includes('雲')) return '⛅';
+            if (wx.includes('晴')) return '☀️';
+            return '☁️';
         }
 
         async function fetchImages() {
@@ -271,23 +220,75 @@
             } catch(e) {}
         }
 
+        // --- 核心優化：照片預載與無縫切換 ---
         function startSlideshow() {
             const cont = document.getElementById('bg-container');
-            const next = () => {
-                const img = document.createElement('div'); img.className = 'bg-image';
-                img.style.backgroundImage = `url('${imageUrls[currentImageIndex]}')`;
-                cont.appendChild(img);
-                setTimeout(() => img.classList.add('active'), 100);
+            
+            const next = async () => {
+                const url = imageUrls[currentImageIndex];
+                
+                // 1. 偷偷在背景下載照片
+                const imgPreloader = new Image();
+                imgPreloader.src = url;
+                
+                // 2. 等到照片完全下載完才執行切換
+                await new Promise(resolve => {
+                    imgPreloader.onload = resolve;
+                    imgPreloader.onerror = resolve; // 失敗也繼續，避免卡死
+                });
+
+                // 3. 建立新節點並執行滑順淡入
+                const imgDiv = document.createElement('div');
+                imgDiv.className = 'bg-image';
+                imgDiv.style.backgroundImage = `url('${url}')`;
+                cont.appendChild(imgDiv);
+                
+                setTimeout(() => imgDiv.classList.add('active'), 100);
+                
+                // 4. 移除舊照片
                 if(cont.children.length > 1) {
-                    const prev = cont.children[0]; prev.style.opacity = '0';
-                    setTimeout(() => prev.remove(), 2000);
+                    const prev = cont.children[0];
+                    prev.style.opacity = '0';
+                    setTimeout(() => prev.remove(), 2500);
                 }
+                
                 currentImageIndex = (currentImageIndex + 1) % imageUrls.length;
             };
-            next(); setInterval(next, 12000);
+
+            next(); // 立即跑第一張
+            setInterval(next, 12000); // 之後每12秒跑一次
         }
 
-        fetchWeather(); fetchImages();
+        // 初始化選單按鈕與氣象
+        function initMenu() {
+            const CITIES = [
+                { label: '基隆', city: '基隆市', dist: '中正區', id: '049' },
+                { label: '台北', city: '臺北市', dist: '中正區', id: '061' },
+                { label: '新北', city: '新北市', dist: '板橋區', id: '069' },
+                { label: '桃園', city: '桃園市', dist: '桃園區', id: '005' },
+                { label: '新竹', city: '新竹市', dist: '東區', id: '053' },
+                { label: '宜蘭', city: '宜蘭縣', dist: '宜蘭市', id: '001' },
+                { label: '台中', city: '臺中市', dist: '西屯區', id: '073' }
+            ];
+            const DISTS = [
+                { label: '淡水', city: '新北市', dist: '淡水區', id: '069' },
+                { label: '板橋', city: '新北市', dist: '板橋區', id: '069' },
+                { label: '新莊', city: '新北市', dist: '新莊區', id: '069' },
+                { label: '永和', city: '新北市', dist: '永和區', id: '069' },
+                { label: '中壢', city: '桃園市', dist: '中壢區', id: '005' },
+                { label: '大甲', city: '臺中市', dist: '大甲區', id: '073' }
+            ];
+            document.getElementById('city-grid').innerHTML = CITIES.map(c => `<div class="loc-btn" onclick="selectLoc('${c.city}','${c.dist}','${c.id}')"><b>${c.label}</b></div>`).join('');
+            document.getElementById('dist-grid').innerHTML = DISTS.map(d => `<div class="loc-btn" onclick="selectLoc('${d.city}','${d.dist}','${d.id}')" style="color:#888">${d.label}</div>`).join('');
+        }
+        window.selectLoc = (city, dist, id) => {
+            currentCity = city; currentDistrict = dist;
+            document.getElementById('loc-tag').innerHTML = `<b>${city.replace('臺','台')}</b> <span>${dist}</span>`;
+            document.getElementById('location-menu').classList.remove('show');
+            fetchWeather(id);
+        };
+
+        initMenu(); fetchWeather(); fetchImages();
         window.onclick = () => document.getElementById('location-menu').classList.remove('show');
     </script>
 </body>

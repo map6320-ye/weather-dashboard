@@ -9,8 +9,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --glass-bg: rgba(15, 20, 35, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-bg: rgba(10, 15, 30, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.1);
             --neon-blue: #00d4ff;
             --neon-pink: #ff007f;
             --text-main: #ffffff;
@@ -32,109 +32,93 @@
 
         .overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2;
-            background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.6));
+            background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.4));
             pointer-events: none;
         }
 
-        /* 核心面板 */
+        /* 核心面板：預設橫向 */
         #widget-container {
-            position: absolute; bottom: 40px; left: 40px; right: 40px;
-            background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            border: 1px solid var(--glass-border); border-radius: 28px;
-            padding: 20px 45px; display: flex; align-items: center; justify-content: space-between;
-            z-index: 10; pointer-events: auto; box-shadow: 0 15px 50px rgba(0,0,0,0.6);
+            position: absolute; bottom: 30px; left: 30px; right: 30px;
+            background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); border-radius: 20px;
+            padding: 15px 35px; display: flex; align-items: center; justify-content: space-between;
+            z-index: 10; pointer-events: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
             cursor: pointer; transition: all 0.3s ease;
         }
 
-        .time-section { display: flex; flex-direction: column; align-items: flex-start; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 40px; min-width: 250px; }
-        .location-display { font-size: 1.2rem; color: var(--neon-blue); margin-bottom: 5px; }
+        .time-section { display: flex; flex-direction: column; align-items: flex-start; border-right: 1px solid rgba(255,255,255,0.15); padding-right: 30px; min-width: 220px; }
+        .location-display { font-size: 1.1rem; color: var(--neon-blue); margin-bottom: 2px; }
         .location-display b { font-weight: 700; }
-        .date-display { font-size: 1.1rem; color: #fff; font-weight: 700; letter-spacing: 1px; opacity: 0.9; }
-        .time-display { font-family: 'Inter', sans-serif; font-size: 4rem; font-weight: 700; line-height: 0.9; color: #fff; margin-top: 5px; }
+        .date-display { font-size: 0.95rem; color: #fff; font-weight: 700; opacity: 0.8; }
+        .time-display { font-family: 'Inter', sans-serif; font-size: 3.5rem; font-weight: 700; line-height: 0.9; color: #fff; margin-top: 2px; }
 
-        .weather-content { display: flex; align-items: center; gap: 40px; flex-grow: 1; padding-left: 40px; }
-        .current-box { display: flex; align-items: center; gap: 15px; }
-        .current-temp { font-family: 'Inter', sans-serif; font-size: 3.5rem; font-weight: 700; color: #fff; }
-        .current-temp span { font-size: 1.5rem; vertical-align: super; font-weight: 400; }
-        .current-icon { font-size: 3.5rem; }
+        .weather-content { display: flex; align-items: center; gap: 30px; flex-grow: 1; padding-left: 30px; overflow: hidden; }
+        .current-box { display: flex; align-items: center; gap: 10px; }
+        .current-temp { font-family: 'Inter', sans-serif; font-size: 3rem; font-weight: 700; color: #fff; }
+        .current-temp span { font-size: 1.2rem; vertical-align: super; font-weight: 400; }
+        .current-icon { font-size: 3rem; }
 
-        .forecast-group { display: flex; gap: 30px; }
-        .forecast-item { display: flex; flex-direction: column; align-items: center; min-width: 60px; }
-        .item-label { font-size: 0.9rem; font-weight: 700; color: rgba(255,255,255,0.6); margin-bottom: 3px; }
-        .item-icon { font-size: 1.8rem; margin: 3px 0; }
-        .item-temp { font-size: 1.1rem; font-weight: 700; color: #fff; }
-        .item-temp span { font-size: 0.7rem; font-weight: 400; vertical-align: super; opacity: 0.7; }
-        .item-pop { font-size: 0.9rem; color: var(--neon-blue); font-weight: 500; }
+        .forecast-group { display: flex; gap: 20px; }
+        .forecast-item { display: flex; flex-direction: column; align-items: center; min-width: 50px; }
+        .item-label { font-size: 0.8rem; font-weight: 700; color: rgba(255,255,255,0.5); margin-bottom: 2px; }
+        .item-icon { font-size: 1.4rem; margin: 2px 0; }
+        .item-temp { font-size: 1rem; font-weight: 700; color: #fff; }
+        .item-temp span { font-size: 0.6rem; vertical-align: super; opacity: 0.6; }
+        .item-pop { font-size: 0.8rem; color: var(--neon-blue); font-weight: 500; }
         .high-pop { color: #ff4444 !important; }
 
-        /* --- 直向模式優化：壓縮高度、縮小字體 --- */
+        /* --- 直向模式優化：極簡橫向長條 --- */
         @media (orientation: portrait) {
             #widget-container {
-                flex-direction: column;
-                align-items: stretch;
-                padding: 20px 25px;
-                bottom: 25px; left: 20px; right: 20px;
-                border-radius: 20px;
+                bottom: 20px; left: 15px; right: 15px;
+                padding: 10px 20px;
+                flex-wrap: nowrap;
+                justify-content: flex-start;
+                gap: 15px;
             }
             .time-section {
-                border-right: none;
-                border-bottom: 1px solid rgba(255,255,255,0.15);
-                padding-right: 0; padding-bottom: 15px; margin-bottom: 15px;
-                min-width: unset; width: 100%;
+                padding-right: 15px; min-width: 140px; border-right: 1px solid rgba(255,255,255,0.1);
             }
-            .time-display { font-size: 3.5rem; }
-            .location-display { font-size: 1.1rem; }
-            .weather-content {
-                padding-left: 0; flex-direction: column; gap: 20px; align-items: stretch;
-            }
-            .current-box { justify-content: space-around; }
-            .current-temp { font-size: 3rem; }
-            .forecast-group { justify-content: space-between; gap: 10px; }
-            .forecast-item { min-width: 50px; }
-            .item-label { font-size: 0.8rem; }
-            .item-icon { font-size: 1.5rem; }
-            #hourly-container, #weekly-container { width: 100%; }
-            .divider { display: none; } /* 直向隱藏分隔線 */
+            .time-display { font-size: 2.2rem; }
+            .location-display { font-size: 0.9rem; }
+            .date-display { font-size: 0.8rem; }
+            
+            .weather-content { padding-left: 0; gap: 15px; }
+            .current-temp { font-size: 2rem; }
+            .current-icon { font-size: 2rem; }
+            .forecast-group { gap: 10px; }
+            .forecast-item { min-width: 45px; }
+            .item-label { font-size: 0.7rem; }
+            .item-icon { font-size: 1.1rem; }
+            .item-temp { font-size: 0.9rem; }
+            /* 直向模式隱藏週預報以節省空間，只留當日每小時 */
+            #weekly-container, .divider { display: none; }
         }
 
-        /* 選單樣式 */
         #location-menu {
-            position: absolute; bottom: 130px; left: 40px; right: 40px; background: rgba(10,15,30,0.98);
-            border: 2px solid var(--neon-blue); border-radius: 24px; padding: 35px;
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
-            opacity: 0; transform: translateY(30px); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            pointer-events: none; z-index: 100; max-height: 70vh; overflow-y: auto;
-        }
-        @media (orientation: portrait) {
-            #location-menu { grid-template-columns: repeat(2, 1fr); padding: 20px; bottom: 100px; }
-            .menu-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            position: absolute; bottom: 100px; left: 20px; right: 20px; background: rgba(10,15,30,0.98);
+            border: 2px solid var(--neon-blue); border-radius: 20px; padding: 25px;
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;
+            opacity: 0; transform: translateY(20px); transition: all 0.3s ease;
+            pointer-events: none; z-index: 100; max-height: 60vh; overflow-y: auto;
         }
         #location-menu.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
         
-        .menu-section { display: flex; flex-direction: column; gap: 15px; }
-        .menu-title { font-size: 1rem; color: var(--neon-pink); font-weight: 700; border-left: 4px solid var(--neon-pink); padding-left: 10px; }
-        .menu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .menu-section { display: flex; flex-direction: column; gap: 10px; }
+        .menu-title { font-size: 0.9rem; color: var(--neon-pink); font-weight: 700; border-left: 3px solid var(--neon-pink); padding-left: 8px; }
+        .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         
         .loc-btn {
-            padding: 15px; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 12px; text-align: center; cursor: pointer; color: #fff;
-            transition: all 0.2s; font-size: 1rem;
+            padding: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; text-align: center; cursor: pointer; color: #fff; font-size: 0.9rem;
         }
-        .loc-btn:hover { background: rgba(0, 212, 255, 0.2); border-color: var(--neon-blue); transform: scale(1.02); }
-        .loc-btn.city-btn { font-weight: 700; font-size: 1.1rem; }
-        .loc-btn.dist-btn { color: #aaaaaa; }
-
-        /* 全螢幕按鈕提示 (非必要但加上去) */
-        #fullscreen-hint {
-            position: fixed; top: 20px; right: 20px; font-size: 0.8rem; color: rgba(255,255,255,0.3); z-index: 5;
-            pointer-events: none;
-        }
+        .loc-btn.city-btn { font-weight: 700; }
+        .loc-btn.dist-btn { color: #888888; }
     </style>
 </head>
 <body ondblclick="toggleFullScreen()">
     <div id="bg-container" onclick="toggleFullScreen()"></div>
     <div class="overlay"></div>
-    <div id="fullscreen-hint">連點兩下切換全螢幕</div>
 
     <div id="widget-container" onclick="toggleMenu(event)">
         <div class="time-section">
@@ -149,7 +133,7 @@
                 <div class="current-icon" id="current-icon">☁️</div>
             </div>
             <div class="forecast-group" id="hourly-container"></div>
-            <div class="divider" style="width: 1px; height: 50px; background: rgba(255,255,255,0.2);"></div>
+            <div class="divider" style="width: 1px; height: 30px; background: rgba(255,255,255,0.1);"></div>
             <div class="forecast-group" id="weekly-container"></div>
         </div>
 

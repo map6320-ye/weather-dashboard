@@ -193,8 +193,16 @@
                 const d = wMin[i].StartTime.substring(0,10);
                 if(d === lastD || d === new Date().toISOString().substring(0,10)) continue;
                 lastD = d;
-                const p = wPop.find(x=>x.StartTime.includes(d))?.ElementValue[0].ProbabilityOfPrecipitation || '0';
-                wCont.innerHTML += `<div class="forecast-item"><span class="item-label">${['週日','週一','週二','週三','週四','週五','週六'][new Date(d).getDay()]}</span><span class="item-icon">${getWeatherIcon(wWx.find(x=>x.StartTime.includes(d)).ElementValue[0].Weather)}</span><span class="item-temp">${wMax.find(x=>x.StartTime.includes(d)).ElementValue[0].MaxTemperature}<span>°C</span></span><span class="item-pop">${p}%</span></div>`;
+                const foundPop = wPop.find(function(x) { return x.StartTime.indexOf(d) !== -1; });
+                const p = (foundPop && foundPop.ElementValue && foundPop.ElementValue[0]) ? foundPop.ElementValue[0].ProbabilityOfPrecipitation : '0';
+
+                const foundWx = wWx.find(function(x) { return x.StartTime.indexOf(d) !== -1; });
+                const wxIcon = foundWx ? getWeatherIcon(foundWx.ElementValue[0].Weather) : '☁️';
+
+                const foundMax = wMax.find(function(x) { return x.StartTime.indexOf(d) !== -1; });
+                const maxTemp = foundMax ? foundMax.ElementValue[0].MaxTemperature : '--';
+
+                wCont.innerHTML += `<div class="forecast-item"><span class="item-label">${['週日','週一','週二','週三','週四','週五','週六'][new Date(d).getDay()]}</span><span class="item-icon">${wxIcon}</span><span class="item-temp">${maxTemp}<span>°C</span></span><span class="item-pop">${p}%</span></div>`;
                 if(++added >= 4) break;
             }
         }

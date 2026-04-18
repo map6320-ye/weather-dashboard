@@ -9,8 +9,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --glass-bg: rgba(20, 25, 45, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-bg: rgba(15, 20, 35, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.15);
             --neon-blue: #00d4ff;
             --neon-pink: #ff007f;
             --text-main: #ffffff;
@@ -32,67 +32,109 @@
 
         .overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2;
-            background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.5));
+            background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.6));
             pointer-events: none;
         }
 
+        /* 核心面板 */
         #widget-container {
             position: absolute; bottom: 40px; left: 40px; right: 40px;
             background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
             border: 1px solid var(--glass-border); border-radius: 28px;
-            padding: 25px 45px; display: flex; align-items: center; justify-content: space-between;
+            padding: 20px 45px; display: flex; align-items: center; justify-content: space-between;
             z-index: 10; pointer-events: auto; box-shadow: 0 15px 50px rgba(0,0,0,0.6);
-            cursor: pointer;
+            cursor: pointer; transition: all 0.3s ease;
         }
 
-        .time-section { display: flex; flex-direction: column; align-items: flex-start; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 40px; min-width: 260px; }
-        .location-display { font-size: 1.3rem; color: var(--neon-blue); margin-bottom: 8px; }
+        .time-section { display: flex; flex-direction: column; align-items: flex-start; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 40px; min-width: 250px; }
+        .location-display { font-size: 1.2rem; color: var(--neon-blue); margin-bottom: 5px; }
         .location-display b { font-weight: 700; }
-        .location-display span { font-weight: 400; opacity: 0.8; }
-        .date-display { font-size: 1.2rem; color: #fff; font-weight: 700; letter-spacing: 1px; opacity: 0.95; }
-        .time-display { font-family: 'Inter', sans-serif; font-size: 4.5rem; font-weight: 700; line-height: 0.9; color: #fff; margin-top: 5px; }
+        .date-display { font-size: 1.1rem; color: #fff; font-weight: 700; letter-spacing: 1px; opacity: 0.9; }
+        .time-display { font-family: 'Inter', sans-serif; font-size: 4rem; font-weight: 700; line-height: 0.9; color: #fff; margin-top: 5px; }
 
         .weather-content { display: flex; align-items: center; gap: 40px; flex-grow: 1; padding-left: 40px; }
-        .current-box { display: flex; align-items: center; gap: 20px; }
-        .current-temp { font-family: 'Inter', sans-serif; font-size: 4rem; font-weight: 700; color: #fff; }
-        .current-temp span { font-size: 1.8rem; vertical-align: super; font-weight: 400; margin-left: 2px; }
-        .current-icon { font-size: 4rem; }
+        .current-box { display: flex; align-items: center; gap: 15px; }
+        .current-temp { font-family: 'Inter', sans-serif; font-size: 3.5rem; font-weight: 700; color: #fff; }
+        .current-temp span { font-size: 1.5rem; vertical-align: super; font-weight: 400; }
+        .current-icon { font-size: 3.5rem; }
 
-        .forecast-group { display: flex; gap: 35px; }
-        .forecast-item { display: flex; flex-direction: column; align-items: center; min-width: 70px; }
-        .item-label { font-size: 0.95rem; font-weight: 700; color: rgba(255,255,255,0.7); margin-bottom: 5px; }
-        .item-icon { font-size: 2rem; margin: 5px 0; }
-        .item-temp { font-size: 1.3rem; font-weight: 700; color: #fff; }
-        .item-temp span { font-size: 0.75rem; font-weight: 400; vertical-align: super; opacity: 0.8; }
-        .item-pop { font-size: 1rem; color: var(--neon-blue); font-weight: 500; }
+        .forecast-group { display: flex; gap: 30px; }
+        .forecast-item { display: flex; flex-direction: column; align-items: center; min-width: 60px; }
+        .item-label { font-size: 0.9rem; font-weight: 700; color: rgba(255,255,255,0.6); margin-bottom: 3px; }
+        .item-icon { font-size: 1.8rem; margin: 3px 0; }
+        .item-temp { font-size: 1.1rem; font-weight: 700; color: #fff; }
+        .item-temp span { font-size: 0.7rem; font-weight: 400; vertical-align: super; opacity: 0.7; }
+        .item-pop { font-size: 0.9rem; color: var(--neon-blue); font-weight: 500; }
         .high-pop { color: #ff4444 !important; }
 
+        /* --- 直向模式優化：壓縮高度、縮小字體 --- */
+        @media (orientation: portrait) {
+            #widget-container {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 20px 25px;
+                bottom: 25px; left: 20px; right: 20px;
+                border-radius: 20px;
+            }
+            .time-section {
+                border-right: none;
+                border-bottom: 1px solid rgba(255,255,255,0.15);
+                padding-right: 0; padding-bottom: 15px; margin-bottom: 15px;
+                min-width: unset; width: 100%;
+            }
+            .time-display { font-size: 3.5rem; }
+            .location-display { font-size: 1.1rem; }
+            .weather-content {
+                padding-left: 0; flex-direction: column; gap: 20px; align-items: stretch;
+            }
+            .current-box { justify-content: space-around; }
+            .current-temp { font-size: 3rem; }
+            .forecast-group { justify-content: space-between; gap: 10px; }
+            .forecast-item { min-width: 50px; }
+            .item-label { font-size: 0.8rem; }
+            .item-icon { font-size: 1.5rem; }
+            #hourly-container, #weekly-container { width: 100%; }
+            .divider { display: none; } /* 直向隱藏分隔線 */
+        }
+
+        /* 選單樣式 */
         #location-menu {
             position: absolute; bottom: 130px; left: 40px; right: 40px; background: rgba(10,15,30,0.98);
             border: 2px solid var(--neon-blue); border-radius: 24px; padding: 35px;
-            display: flex; flex-direction: column; gap: 30px;
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
             opacity: 0; transform: translateY(30px); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            pointer-events: none; z-index: 100; max-height: 75vh; overflow-y: auto;
+            pointer-events: none; z-index: 100; max-height: 70vh; overflow-y: auto;
+        }
+        @media (orientation: portrait) {
+            #location-menu { grid-template-columns: repeat(2, 1fr); padding: 20px; bottom: 100px; }
+            .menu-grid { grid-template-columns: repeat(2, 1fr) !important; }
         }
         #location-menu.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
         
         .menu-section { display: flex; flex-direction: column; gap: 15px; }
         .menu-title { font-size: 1rem; color: var(--neon-pink); font-weight: 700; border-left: 4px solid var(--neon-pink); padding-left: 10px; }
-        .menu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+        .menu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
         
         .loc-btn {
-            padding: 20px; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 15px; text-align: center; cursor: pointer; color: #fff;
-            transition: all 0.2s; font-size: 1.1rem; font-weight: 500;
+            padding: 15px; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px; text-align: center; cursor: pointer; color: #fff;
+            transition: all 0.2s; font-size: 1rem;
         }
         .loc-btn:hover { background: rgba(0, 212, 255, 0.2); border-color: var(--neon-blue); transform: scale(1.02); }
-        .loc-btn.city-btn { font-weight: 700; font-size: 1.2rem; }
-        .loc-btn.dist-btn { color: #aaaaaa; } /* 區使用灰字 */
+        .loc-btn.city-btn { font-weight: 700; font-size: 1.1rem; }
+        .loc-btn.dist-btn { color: #aaaaaa; }
+
+        /* 全螢幕按鈕提示 (非必要但加上去) */
+        #fullscreen-hint {
+            position: fixed; top: 20px; right: 20px; font-size: 0.8rem; color: rgba(255,255,255,0.3); z-index: 5;
+            pointer-events: none;
+        }
     </style>
 </head>
-<body>
-    <div id="bg-container"></div>
+<body ondblclick="toggleFullScreen()">
+    <div id="bg-container" onclick="toggleFullScreen()"></div>
     <div class="overlay"></div>
+    <div id="fullscreen-hint">連點兩下切換全螢幕</div>
 
     <div id="widget-container" onclick="toggleMenu(event)">
         <div class="time-section">
@@ -107,7 +149,7 @@
                 <div class="current-icon" id="current-icon">☁️</div>
             </div>
             <div class="forecast-group" id="hourly-container"></div>
-            <div style="width: 1px; height: 50px; background: rgba(255,255,255,0.2);"></div>
+            <div class="divider" style="width: 1px; height: 50px; background: rgba(255,255,255,0.2);"></div>
             <div class="forecast-group" id="weekly-container"></div>
         </div>
 
@@ -131,7 +173,6 @@
         let imageUrls = [], currentImageIndex = 0;
         let currentCity = '新北市', currentDistrict = '新莊區';
 
-        // 縣市清單 (由北到南排序)
         const CITIES = [
             { label: '基隆市', city: '基隆市', dist: '中正區', id: '049' },
             { label: '臺北市', city: '臺北市', dist: '中正區', id: '061' },
@@ -142,7 +183,6 @@
             { label: '臺中市', city: '臺中市', dist: '西屯區', id: '073' }
         ];
 
-        // 行政區清單 (由北到南排序)
         const DISTRICTS = [
             { label: '淡水區', city: '新北市', dist: '淡水區', id: '069' },
             { label: '板橋區', city: '新北市', dist: '板橋區', id: '069' },
@@ -151,6 +191,14 @@
             { label: '中壢區', city: '桃園市', dist: '中壢區', id: '005' },
             { label: '大甲區', city: '臺中市', dist: '大甲區', id: '073' }
         ];
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
 
         function updateTime() {
             const now = new Date();
@@ -168,7 +216,6 @@
             fetchWeather(id);
         }
 
-        // 渲染選單
         document.getElementById('city-grid').innerHTML = CITIES.map(item => `
             <div class="loc-btn city-btn" onclick="selectLoc('${item.city}','${item.dist}','${item.id}')">${item.label.replace('臺','台')}</div>
         `).join('');
@@ -187,7 +234,6 @@
 
         async function fetchWeather(forcedId) {
             try {
-                // 優先使用傳入的 id，否則從清單中找
                 let item = null;
                 if (forcedId) {
                     item = { id: forcedId };
@@ -196,7 +242,6 @@
                            DISTRICTS.find(i => i.city === currentCity && i.dist === currentDistrict) || 
                            CITIES[2];
                 }
-                
                 const res2D = await fetch(`https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-D0047-${item.id}?Authorization=${CWA_API_KEY}&LocationName=${encodeURIComponent(currentDistrict)}`);
                 const data2D = await res2D.json();
                 const weekId = String(parseInt(item.id) + 2).padStart(3, '0');

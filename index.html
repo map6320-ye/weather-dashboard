@@ -7,12 +7,15 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>City Pop Weather Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --glass-bg: rgba(10, 15, 30, 0.5);
             --glass-border: rgba(255, 255, 255, 0.1);
             --neon-blue: #00d4ff;
+            --neon-pink: #ff007f;
             --text-main: #ffffff;
         }
 
@@ -70,89 +73,6 @@
             z-index: 2;
             background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.3));
             pointer-events: none;
-        }
-
-        /* 設定齒輪按鈕 */
-        #settings-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 200;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            font-size: 1.2rem;
-            color: rgba(255,255,255,0.7);
-        }
-
-        /* 設定面板 Modal */
-        #settings-modal {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(10, 15, 30, 0.95);
-            border: 1px solid var(--neon-blue);
-            border-radius: 15px;
-            padding: 25px;
-            z-index: 300;
-            width: 90%;
-            max-width: 350px;
-            display: none; /* 預設隱藏 */
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        #settings-modal.show {
-            display: flex;
-        }
-
-        .modal-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--neon-blue);
-            margin-bottom: 5px;
-            text-align: center;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .input-group label {
-            font-size: 0.8rem;
-            color: rgba(255,255,255,0.7);
-        }
-
-        .input-group input {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: #fff;
-            padding: 8px 10px;
-            border-radius: 8px;
-            outline: none;
-            font-family: monospace;
-        }
-
-        .save-btn {
-            background: var(--neon-blue);
-            color: #000;
-            border: none;
-            padding: 10px;
-            border-radius: 8px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 10px;
         }
 
         /* 核心面板 */
@@ -285,6 +205,7 @@
             font-weight: 500;
         }
 
+        /* --- 直向模式：貼齊底部、緊湊佈局 --- */
         @media (orientation: portrait) {
             #widget-container {
                 bottom: 8px;
@@ -399,28 +320,9 @@
     </style>
 </head>
 
-<body>
-    <div id="bg-container"></div>
+<body ondblclick="toggleFullScreen()">
+    <div id="bg-container" onclick="toggleFullScreen()"></div>
     <div class="overlay"></div>
-
-    <div id="settings-btn" onclick="toggleSettings(event)">⚙️</div>
-
-    <div id="settings-modal" onclick="event.stopPropagation()">
-        <div class="modal-title">系統設定 (本機儲存)</div>
-        <div class="input-group">
-            <label>CWA API Key (氣象署)</label>
-            <input type="text" id="input-cwa" placeholder="CWA-...">
-        </div>
-        <div class="input-group">
-            <label>Google Drive API Key</label>
-            <input type="text" id="input-drive-key" placeholder="AIzaSy...">
-        </div>
-        <div class="input-group">
-            <label>Google Drive Folder ID</label>
-            <input type="text" id="input-folder-id" placeholder="1apZk...">
-        </div>
-        <button class="save-btn" onclick="saveSettings()">儲存並載入</button>
-    </div>
 
     <div id="widget-container" onclick="toggleMenu(event)">
         <div class="time-section">
@@ -452,10 +354,9 @@
     </div>
 
     <script>
-        // 從 localStorage 讀取金鑰，取代寫死在程式碼裡
-        let GOOGLE_DRIVE_FOLDER_ID = localStorage.getItem('drive_folder_id') || '';
-        let GOOGLE_DRIVE_API_KEY = localStorage.getItem('drive_api_key') || '';
-        let CWA_API_KEY = localStorage.getItem('cwa_api_key') || '';
+        const GOOGLE_DRIVE_FOLDER_ID = '1apZkealXx1A3yhr1tSZlrYU7YfpN3BHP';
+        const GOOGLE_DRIVE_API_KEY = 'AIzaSyDy5_yeAxfSER9yF96UHJtj41jzDtbTGOU';
+        const CWA_API_KEY = 'CWA-D7AE37AC-F16E-443E-A75A-15968B49C686';
 
         let imageUrls = [], currentImageIndex = 0;
         let currentCity = '新北市', currentDistrict = '新莊區';
@@ -468,39 +369,19 @@
         }
         setInterval(updateTime, 1000); updateTime();
 
-        function toggleMenu(e) { e.stopPropagation(); document.getElementById('location-menu').classList.toggle('show'); }
-        
-        function toggleSettings(e) { 
-            e.stopPropagation(); 
-            const modal = document.getElementById('settings-modal');
-            if(!modal.classList.contains('show')) {
-                document.getElementById('input-cwa').value = CWA_API_KEY;
-                document.getElementById('input-drive-key').value = GOOGLE_DRIVE_API_KEY;
-                document.getElementById('input-folder-id').value = GOOGLE_DRIVE_FOLDER_ID;
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => { });
+            } else if (document.exitFullscreen) {
+                document.exitFullscreen();
             }
-            modal.classList.toggle('show'); 
         }
 
-        function saveSettings() {
-            CWA_API_KEY = document.getElementById('input-cwa').value.trim();
-            GOOGLE_DRIVE_API_KEY = document.getElementById('input-drive-key').value.trim();
-            GOOGLE_DRIVE_FOLDER_ID = document.getElementById('input-folder-id').value.trim();
-
-            localStorage.setItem('cwa_api_key', CWA_API_KEY);
-            localStorage.setItem('drive_api_key', GOOGLE_DRIVE_API_KEY);
-            localStorage.setItem('drive_folder_id', GOOGLE_DRIVE_FOLDER_ID);
-
-            document.getElementById('settings-modal').classList.remove('show');
-            
-            // 重新抓取資料
-            if(CWA_API_KEY) fetchWeather();
-            if(GOOGLE_DRIVE_API_KEY && GOOGLE_DRIVE_FOLDER_ID) fetchImages();
-        }
+        function toggleMenu(e) { e.stopPropagation(); document.getElementById('location-menu').classList.toggle('show'); }
 
         async function fetchWeather(forcedId) {
-            if (!CWA_API_KEY) return;
             try {
-                const item = { label: '新北市', city: '新北市', dist: '新莊區', id: '069' }; 
+                const item = { label: '新北市', city: '新北市', dist: '新莊區', id: '069' }; // 預設
                 const targetId = forcedId || '069';
                 const res2D = await fetch(`https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-D0047-${targetId}?Authorization=${CWA_API_KEY}&LocationName=${encodeURIComponent(currentDistrict)}`);
                 const data2D = await res2D.json();
@@ -553,34 +434,36 @@
         }
 
         async function fetchImages() {
-            if (!GOOGLE_DRIVE_API_KEY || !GOOGLE_DRIVE_FOLDER_ID) return;
             try {
                 const q = `'${GOOGLE_DRIVE_FOLDER_ID}' in parents and mimeType contains 'image/' and trashed = false`;
                 const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&key=${GOOGLE_DRIVE_API_KEY}&fields=files(id)`);
                 const data = await res.json();
                 if (data.files) {
-                    // 修改：使用 uc?export=view 替換 thumbnail 避免 iOS ITP 阻擋
-                    imageUrls = data.files.map(f => `https://drive.google.com/uc?export=view&id=${f.id}`);
+                    imageUrls = data.files.map(f => `https://drive.google.com/thumbnail?id=${f.id}&sz=w1920`);
                     imageUrls.sort(() => Math.random() - 0.5);
                     startSlideshow();
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) { }
         }
 
+        // --- 核心優化：照片預載與無縫切換 ---
         function startSlideshow() {
             const cont = document.getElementById('bg-container');
-            if (imageUrls.length === 0) return;
 
             const next = async () => {
                 const url = imageUrls[currentImageIndex];
+
+                // 1. 偷偷在背景下載照片
                 const imgPreloader = new Image();
                 imgPreloader.src = url;
 
+                // 2. 等到照片完全下載完才執行切換
                 await new Promise(resolve => {
                     imgPreloader.onload = resolve;
-                    imgPreloader.onerror = resolve; 
+                    imgPreloader.onerror = resolve; // 失敗也繼續，避免卡死
                 });
 
+                // 3. 建立新節點並執行滑順淡入
                 const imgDiv = document.createElement('div');
                 imgDiv.className = 'bg-image';
                 imgDiv.style.backgroundImage = `url('${url}')`;
@@ -588,18 +471,21 @@
 
                 setTimeout(() => imgDiv.classList.add('active'), 100);
 
+                // 4. 移除舊照片
                 if (cont.children.length > 1) {
                     const prev = cont.children[0];
                     prev.style.opacity = '0';
                     setTimeout(() => prev.remove(), 2500);
                 }
+
                 currentImageIndex = (currentImageIndex + 1) % imageUrls.length;
             };
 
-            next(); 
-            setInterval(next, 12000); 
+            next(); // 立即跑第一張
+            setInterval(next, 12000); // 之後每12秒跑一次
         }
 
+        // 初始化選單按鈕與氣象
         function initMenu() {
             const CITIES = [
                 { label: '基隆', city: '基隆市', dist: '中正區', id: '049' },
@@ -628,20 +514,8 @@
             fetchWeather(id);
         };
 
-        // 啟動邏輯
-        initMenu(); 
-        if (CWA_API_KEY) fetchWeather();
-        if (GOOGLE_DRIVE_API_KEY && GOOGLE_DRIVE_FOLDER_ID) fetchImages();
-        
-        // 如果沒有金鑰，自動跳出設定畫面
-        if (!CWA_API_KEY || !GOOGLE_DRIVE_API_KEY) {
-            document.getElementById('settings-modal').classList.add('show');
-        }
-
-        window.onclick = () => {
-            document.getElementById('location-menu').classList.remove('show');
-            document.getElementById('settings-modal').classList.remove('show');
-        };
+        initMenu(); fetchWeather(); fetchImages();
+        window.onclick = () => document.getElementById('location-menu').classList.remove('show');
     </script>
 </body>
 

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -12,99 +13,414 @@
             --glass-bg: rgba(10, 15, 30, 0.5);
             --glass-border: rgba(255, 255, 255, 0.1);
             --neon-blue: #00d4ff;
-            --neon-pink: #ff007f;
             --text-main: #ffffff;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-        body, html { width: 100%; height: 100%; overflow: hidden; background-color: #000; font-family: 'Inter', sans-serif; color: var(--text-main); }
-
-        #bg-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
-        .bg-image {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-size: cover; background-position: center;
-            opacity: 0; transform: scale(1.05); transition: opacity 2.5s ease-in-out;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
         }
+
+        body,
+        html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+        }
+
+        #bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .bg-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transform: scale(1.05);
+            transition: opacity 2.5s ease-in-out;
+        }
+
         .bg-image.active {
-            opacity: 1; transform: scale(1);
+            opacity: 1;
+            transform: scale(1);
             transition: opacity 2.5s ease-in-out, transform 12s linear;
         }
 
         .overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2;
-            background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.3));
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.3));
             pointer-events: none;
+        }
+
+        /* 設定齒輪按鈕 */
+        #settings-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 200;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.7);
+        }
+
+        /* 設定面板 Modal */
+        #settings-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(10, 15, 30, 0.95);
+            border: 1px solid var(--neon-blue);
+            border-radius: 15px;
+            padding: 25px;
+            z-index: 300;
+            width: 90%;
+            max-width: 350px;
+            display: none; /* 預設隱藏 */
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        #settings-modal.show {
+            display: flex;
+        }
+
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--neon-blue);
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-group label {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .input-group input {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            padding: 8px 10px;
+            border-radius: 8px;
+            outline: none;
+            font-family: monospace;
+        }
+
+        .save-btn {
+            background: var(--neon-blue);
+            color: #000;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
         }
 
         /* 核心面板 */
         #widget-container {
-            position: absolute; bottom: 30px; left: 30px; right: 30px;
-            background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border); border-radius: 20px;
-            padding: 12px 35px; display: flex; align-items: center; justify-content: space-between;
-            z-index: 10; pointer-events: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-            cursor: pointer; transition: all 0.3s ease;
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            right: 30px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 12px 35px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+            pointer-events: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
-        .time-section { display: flex; flex-direction: column; align-items: flex-start; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 25px; min-width: 210px; }
-        .location-display { font-size: 1rem; color: var(--neon-blue); margin-bottom: 2px; }
-        .location-display b { font-weight: 700; }
-        .date-display { font-size: 0.9rem; color: #fff; font-weight: 700; opacity: 0.8; }
-        .time-display { font-family: 'Inter', sans-serif; font-size: 3.2rem; font-weight: 700; line-height: 0.9; color: #fff; margin-top: 2px; }
+        .time-section {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding-right: 25px;
+            min-width: 210px;
+        }
 
-        .weather-content { display: flex; align-items: center; gap: 25px; flex-grow: 1; padding-left: 25px; }
-        .current-box { display: flex; align-items: center; gap: 8px; }
-        .current-temp { font-family: 'Inter', sans-serif; font-size: 2.8rem; font-weight: 700; color: #fff; }
-        .current-temp span { font-size: 1rem; vertical-align: super; font-weight: 400; }
-        .current-icon { font-size: 2.8rem; }
+        .location-display {
+            font-size: 1rem;
+            color: var(--neon-blue);
+            margin-bottom: 2px;
+        }
 
-        .forecast-group { display: flex; gap: 15px; }
-        .forecast-item { display: flex; flex-direction: column; align-items: center; min-width: 45px; }
-        .item-label { font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.5); margin-bottom: 2px; }
-        .item-icon { font-size: 1.2rem; margin: 2px 0; }
-        .item-temp { font-size: 0.9rem; font-weight: 700; color: #fff; }
-        .item-temp span { font-size: 0.5rem; vertical-align: super; opacity: 0.5; }
-        .item-pop { font-size: 0.75rem; color: var(--neon-blue); font-weight: 500; }
+        .location-display b {
+            font-weight: 700;
+        }
 
-        /* --- 直向模式：貼齊底部、緊湊佈局 --- */
+        .date-display {
+            font-size: 0.9rem;
+            color: #fff;
+            font-weight: 700;
+            opacity: 0.8;
+        }
+
+        .time-display {
+            font-family: 'Inter', sans-serif;
+            font-size: 3.2rem;
+            font-weight: 700;
+            line-height: 0.9;
+            color: #fff;
+            margin-top: 2px;
+        }
+
+        .weather-content {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            flex-grow: 1;
+            padding-left: 25px;
+        }
+
+        .current-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .current-temp {
+            font-family: 'Inter', sans-serif;
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .current-temp span {
+            font-size: 1rem;
+            vertical-align: super;
+            font-weight: 400;
+        }
+
+        .current-icon {
+            font-size: 2.8rem;
+        }
+
+        .forecast-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .forecast-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 45px;
+        }
+
+        .item-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 2px;
+        }
+
+        .item-icon {
+            font-size: 1.2rem;
+            margin: 2px 0;
+        }
+
+        .item-temp {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .item-temp span {
+            font-size: 0.5rem;
+            vertical-align: super;
+            opacity: 0.5;
+        }
+
+        .item-pop {
+            font-size: 0.75rem;
+            color: var(--neon-blue);
+            font-weight: 500;
+        }
+
         @media (orientation: portrait) {
             #widget-container {
-                bottom: 8px; left: 10px; right: 10px;
+                bottom: 8px;
+                left: 10px;
+                right: 10px;
                 padding: 10px 15px;
                 border-radius: 12px;
                 gap: 8px;
             }
-            .time-section { padding-right: 12px; min-width: 105px; }
-            .time-display { font-size: 2rem; }
-            .location-display { font-size: 0.8rem; }
-            .date-display { font-size: 0.7rem; }
-            
-            .weather-content { padding-left: 8px; gap: 12px; justify-content: space-between; }
-            .current-temp { font-size: 1.8rem; }
-            .current-icon { font-size: 1.8rem; }
-            .forecast-group { gap: 8px; }
-            .forecast-item { min-width: 38px; }
-            .item-label { font-size: 0.6rem; }
-            .item-icon { font-size: 1rem; }
-            .item-temp { font-size: 0.85rem; }
-            .divider { width: 1px; height: 20px; background: rgba(255,255,255,0.1); margin: 0 5px; }
+
+            .time-section {
+                padding-right: 12px;
+                min-width: 105px;
+            }
+
+            .time-display {
+                font-size: 2rem;
+            }
+
+            .location-display {
+                font-size: 0.8rem;
+            }
+
+            .date-display {
+                font-size: 0.7rem;
+            }
+
+            .weather-content {
+                padding-left: 8px;
+                gap: 12px;
+                justify-content: space-between;
+            }
+
+            .current-temp {
+                font-size: 1.8rem;
+            }
+
+            .current-icon {
+                font-size: 1.8rem;
+            }
+
+            .forecast-group {
+                gap: 8px;
+            }
+
+            .forecast-item {
+                min-width: 38px;
+            }
+
+            .item-label {
+                font-size: 0.6rem;
+            }
+
+            .item-icon {
+                font-size: 1rem;
+            }
+
+            .item-temp {
+                font-size: 0.85rem;
+            }
+
+            .divider {
+                width: 1px;
+                height: 20px;
+                background: rgba(255, 255, 255, 0.1);
+                margin: 0 5px;
+            }
         }
 
         #location-menu {
-            position: absolute; bottom: 80px; left: 15px; right: 15px; background: rgba(10,15,30,0.95);
-            border: 1px solid var(--neon-blue); border-radius: 15px; padding: 20px;
-            display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;
-            opacity: 0; transform: translateY(15px); transition: all 0.3s ease;
-            pointer-events: none; z-index: 100; max-height: 50vh; overflow-y: auto;
+            position: absolute;
+            bottom: 80px;
+            left: 15px;
+            right: 15px;
+            background: rgba(10, 15, 30, 0.95);
+            border: 1px solid var(--neon-blue);
+            border-radius: 15px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            opacity: 0;
+            transform: translateY(15px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 100;
+            max-height: 50vh;
+            overflow-y: auto;
         }
-        #location-menu.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
-        .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-        .loc-btn { padding: 10px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; text-align: center; cursor: pointer; color: #fff; font-size: 0.85rem; }
+
+        #location-menu.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .loc-btn {
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            color: #fff;
+            font-size: 0.85rem;
+        }
     </style>
 </head>
-<body ondblclick="toggleFullScreen()">
-    <div id="bg-container" onclick="toggleFullScreen()"></div>
+
+<body>
+    <div id="bg-container"></div>
     <div class="overlay"></div>
+
+    <div id="settings-btn" onclick="toggleSettings(event)">⚙️</div>
+
+    <div id="settings-modal" onclick="event.stopPropagation()">
+        <div class="modal-title">系統設定 (本機儲存)</div>
+        <div class="input-group">
+            <label>CWA API Key (氣象署)</label>
+            <input type="text" id="input-cwa" placeholder="CWA-...">
+        </div>
+        <div class="input-group">
+            <label>Google Drive API Key</label>
+            <input type="text" id="input-drive-key" placeholder="AIzaSy...">
+        </div>
+        <div class="input-group">
+            <label>Google Drive Folder ID</label>
+            <input type="text" id="input-folder-id" placeholder="1apZk...">
+        </div>
+        <button class="save-btn" onclick="saveSettings()">儲存並載入</button>
+    </div>
 
     <div id="widget-container" onclick="toggleMenu(event)">
         <div class="time-section">
@@ -136,34 +452,55 @@
     </div>
 
     <script>
-        const GOOGLE_DRIVE_FOLDER_ID = '1apZkealXx1A3yhr1tSZlrYU7YfpN3BHP';
-        const GOOGLE_DRIVE_API_KEY = 'AIzaSyDy5_yeAxfSER9yF96UHJtj41jzDtbTGOU';
-        const CWA_API_KEY = 'CWA-D7AE37AC-F16E-443E-A75A-15968B49C686';
+        // 從 localStorage 讀取金鑰，取代寫死在程式碼裡
+        let GOOGLE_DRIVE_FOLDER_ID = localStorage.getItem('drive_folder_id') || '';
+        let GOOGLE_DRIVE_API_KEY = localStorage.getItem('drive_api_key') || '';
+        let CWA_API_KEY = localStorage.getItem('cwa_api_key') || '';
 
         let imageUrls = [], currentImageIndex = 0;
         let currentCity = '新北市', currentDistrict = '新莊區';
 
         function updateTime() {
             const now = new Date();
-            document.getElementById('time-display').innerText = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-            const days = ['日','一','二','三','四','五','六'];
-            document.getElementById('date-display').innerText = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} 星期${days[now.getDay()]}`;
+            document.getElementById('time-display').innerText = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const days = ['日', '一', '二', '三', '四', '五', '六'];
+            document.getElementById('date-display').innerText = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')} 星期${days[now.getDay()]}`;
         }
         setInterval(updateTime, 1000); updateTime();
 
-        function toggleFullScreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => {});
-            } else if (document.exitFullscreen) {
-                document.exitFullscreen();
-            }
-        }
-
         function toggleMenu(e) { e.stopPropagation(); document.getElementById('location-menu').classList.toggle('show'); }
         
+        function toggleSettings(e) { 
+            e.stopPropagation(); 
+            const modal = document.getElementById('settings-modal');
+            if(!modal.classList.contains('show')) {
+                document.getElementById('input-cwa').value = CWA_API_KEY;
+                document.getElementById('input-drive-key').value = GOOGLE_DRIVE_API_KEY;
+                document.getElementById('input-folder-id').value = GOOGLE_DRIVE_FOLDER_ID;
+            }
+            modal.classList.toggle('show'); 
+        }
+
+        function saveSettings() {
+            CWA_API_KEY = document.getElementById('input-cwa').value.trim();
+            GOOGLE_DRIVE_API_KEY = document.getElementById('input-drive-key').value.trim();
+            GOOGLE_DRIVE_FOLDER_ID = document.getElementById('input-folder-id').value.trim();
+
+            localStorage.setItem('cwa_api_key', CWA_API_KEY);
+            localStorage.setItem('drive_api_key', GOOGLE_DRIVE_API_KEY);
+            localStorage.setItem('drive_folder_id', GOOGLE_DRIVE_FOLDER_ID);
+
+            document.getElementById('settings-modal').classList.remove('show');
+            
+            // 重新抓取資料
+            if(CWA_API_KEY) fetchWeather();
+            if(GOOGLE_DRIVE_API_KEY && GOOGLE_DRIVE_FOLDER_ID) fetchImages();
+        }
+
         async function fetchWeather(forcedId) {
+            if (!CWA_API_KEY) return;
             try {
-                const item = { label: '新北市', city: '新北市', dist: '新莊區', id: '069' }; // 預設
+                const item = { label: '新北市', city: '新北市', dist: '新莊區', id: '069' }; 
                 const targetId = forcedId || '069';
                 const res2D = await fetch(`https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-D0047-${targetId}?Authorization=${CWA_API_KEY}&LocationName=${encodeURIComponent(currentDistrict)}`);
                 const data2D = await res2D.json();
@@ -181,29 +518,29 @@
             document.getElementById('current-temp').innerHTML = `${temp[0].ElementValue[0].Temperature}<span>°C</span>`;
             document.getElementById('current-icon').innerText = getWeatherIcon(wx[0].ElementValue[0].Weather);
             const hCont = document.getElementById('hourly-container'); hCont.innerHTML = '';
-            for(let i=1; i<=4; i++) {
+            for (let i = 1; i <= 4; i++) {
                 const p = pop[i].ElementValue[0].ProbabilityOfPrecipitation;
-                hCont.innerHTML += `<div class="forecast-item"><span class="item-label">${wx[i].StartTime.substring(11,16)}</span><span class="item-icon">${getWeatherIcon(wx[i].ElementValue[0].Weather)}</span><span class="item-temp">${temp[i].ElementValue[0].Temperature}<span>°C</span></span><span class="item-pop">${p}%</span></div>`;
+                hCont.innerHTML += `<div class="forecast-item"><span class="item-label">${wx[i].StartTime.substring(11, 16)}</span><span class="item-icon">${getWeatherIcon(wx[i].ElementValue[0].Weather)}</span><span class="item-temp">${temp[i].ElementValue[0].Temperature}<span>°C</span></span><span class="item-pop">${p}%</span></div>`;
             }
             const wLoc = dW.records.Locations[0].Location[0];
             const wMin = getE(wLoc, '最低溫度').Time, wMax = getE(wLoc, '最高溫度').Time, wWx = getE(wLoc, '天氣現象').Time, wPop = getE(wLoc, '12小時降雨機率').Time;
             const wCont = document.getElementById('weekly-container'); wCont.innerHTML = '';
             let added = 0, lastD = '';
-            for(let i=0; i<wMin.length; i++) {
-                const d = wMin[i].StartTime.substring(0,10);
-                if(d === lastD || d === new Date().toISOString().substring(0,10)) continue;
+            for (let i = 0; i < wMin.length; i++) {
+                const d = wMin[i].StartTime.substring(0, 10);
+                if (d === lastD || d === new Date().toISOString().substring(0, 10)) continue;
                 lastD = d;
-                const foundPop = wPop.find(function(x) { return x.StartTime.indexOf(d) !== -1; });
+                const foundPop = wPop.find(function (x) { return x.StartTime.indexOf(d) !== -1; });
                 const p = (foundPop && foundPop.ElementValue && foundPop.ElementValue[0]) ? foundPop.ElementValue[0].ProbabilityOfPrecipitation : '0';
 
-                const foundWx = wWx.find(function(x) { return x.StartTime.indexOf(d) !== -1; });
+                const foundWx = wWx.find(function (x) { return x.StartTime.indexOf(d) !== -1; });
                 const wxIcon = foundWx ? getWeatherIcon(foundWx.ElementValue[0].Weather) : '☁️';
 
-                const foundMax = wMax.find(function(x) { return x.StartTime.indexOf(d) !== -1; });
+                const foundMax = wMax.find(function (x) { return x.StartTime.indexOf(d) !== -1; });
                 const maxTemp = foundMax ? foundMax.ElementValue[0].MaxTemperature : '--';
 
-                wCont.innerHTML += `<div class="forecast-item"><span class="item-label">${['週日','週一','週二','週三','週四','週五','週六'][new Date(d).getDay()]}</span><span class="item-icon">${wxIcon}</span><span class="item-temp">${maxTemp}<span>°C</span></span><span class="item-pop">${p}%</span></div>`;
-                if(++added >= 4) break;
+                wCont.innerHTML += `<div class="forecast-item"><span class="item-label">${['週日', '週一', '週二', '週三', '週四', '週五', '週六'][new Date(d).getDay()]}</span><span class="item-icon">${wxIcon}</span><span class="item-temp">${maxTemp}<span>°C</span></span><span class="item-pop">${p}%</span></div>`;
+                if (++added >= 4) break;
             }
         }
 
@@ -216,58 +553,53 @@
         }
 
         async function fetchImages() {
+            if (!GOOGLE_DRIVE_API_KEY || !GOOGLE_DRIVE_FOLDER_ID) return;
             try {
                 const q = `'${GOOGLE_DRIVE_FOLDER_ID}' in parents and mimeType contains 'image/' and trashed = false`;
                 const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&key=${GOOGLE_DRIVE_API_KEY}&fields=files(id)`);
                 const data = await res.json();
-                if(data.files) {
-                    imageUrls = data.files.map(f => `https://drive.google.com/thumbnail?id=${f.id}&sz=w1920`);
+                if (data.files) {
+                    // 修改：使用 uc?export=view 替換 thumbnail 避免 iOS ITP 阻擋
+                    imageUrls = data.files.map(f => `https://drive.google.com/uc?export=view&id=${f.id}`);
                     imageUrls.sort(() => Math.random() - 0.5);
                     startSlideshow();
                 }
-            } catch(e) {}
+            } catch (e) { console.error(e); }
         }
 
-        // --- 核心優化：照片預載與無縫切換 ---
         function startSlideshow() {
             const cont = document.getElementById('bg-container');
-            
+            if (imageUrls.length === 0) return;
+
             const next = async () => {
                 const url = imageUrls[currentImageIndex];
-                
-                // 1. 偷偷在背景下載照片
                 const imgPreloader = new Image();
                 imgPreloader.src = url;
-                
-                // 2. 等到照片完全下載完才執行切換
+
                 await new Promise(resolve => {
                     imgPreloader.onload = resolve;
-                    imgPreloader.onerror = resolve; // 失敗也繼續，避免卡死
+                    imgPreloader.onerror = resolve; 
                 });
 
-                // 3. 建立新節點並執行滑順淡入
                 const imgDiv = document.createElement('div');
                 imgDiv.className = 'bg-image';
                 imgDiv.style.backgroundImage = `url('${url}')`;
                 cont.appendChild(imgDiv);
-                
+
                 setTimeout(() => imgDiv.classList.add('active'), 100);
-                
-                // 4. 移除舊照片
-                if(cont.children.length > 1) {
+
+                if (cont.children.length > 1) {
                     const prev = cont.children[0];
                     prev.style.opacity = '0';
                     setTimeout(() => prev.remove(), 2500);
                 }
-                
                 currentImageIndex = (currentImageIndex + 1) % imageUrls.length;
             };
 
-            next(); // 立即跑第一張
-            setInterval(next, 12000); // 之後每12秒跑一次
+            next(); 
+            setInterval(next, 12000); 
         }
 
-        // 初始化選單按鈕與氣象
         function initMenu() {
             const CITIES = [
                 { label: '基隆', city: '基隆市', dist: '中正區', id: '049' },
@@ -291,13 +623,26 @@
         }
         window.selectLoc = (city, dist, id) => {
             currentCity = city; currentDistrict = dist;
-            document.getElementById('loc-tag').innerHTML = `<b>${city.replace('臺','台')}</b> <span>${dist}</span>`;
+            document.getElementById('loc-tag').innerHTML = `<b>${city.replace('臺', '台')}</b> <span>${dist}</span>`;
             document.getElementById('location-menu').classList.remove('show');
             fetchWeather(id);
         };
 
-        initMenu(); fetchWeather(); fetchImages();
-        window.onclick = () => document.getElementById('location-menu').classList.remove('show');
+        // 啟動邏輯
+        initMenu(); 
+        if (CWA_API_KEY) fetchWeather();
+        if (GOOGLE_DRIVE_API_KEY && GOOGLE_DRIVE_FOLDER_ID) fetchImages();
+        
+        // 如果沒有金鑰，自動跳出設定畫面
+        if (!CWA_API_KEY || !GOOGLE_DRIVE_API_KEY) {
+            document.getElementById('settings-modal').classList.add('show');
+        }
+
+        window.onclick = () => {
+            document.getElementById('location-menu').classList.remove('show');
+            document.getElementById('settings-modal').classList.remove('show');
+        };
     </script>
 </body>
+
 </html>
